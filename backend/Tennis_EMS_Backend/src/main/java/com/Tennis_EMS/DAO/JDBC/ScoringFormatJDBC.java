@@ -1,0 +1,182 @@
+package com.Tennis_EMS.DAO.JDBC;
+
+import com.Tennis_EMS.DAO.ScoringFormatDAO;
+import com.Tennis_EMS.Entity.ScoringFormat;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public class ScoringFormatJDBC implements ScoringFormatDAO {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    public ScoringFormatJDBC(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    private final RowMapper<ScoringFormat> rowMapper = (rs, rowNum) -> {
+        Timestamp createdTs = rs.getTimestamp("createdAt");
+        Timestamp updatedTs = rs.getTimestamp("updatedAt");
+
+        LocalDateTime createdAt = createdTs == null ? null : createdTs.toLocalDateTime();
+        LocalDateTime updatedAt = updatedTs == null ? null : updatedTs.toLocalDateTime();
+
+        ScoringFormat f = new ScoringFormat(
+                rs.getInt("formatId"),
+                rs.getString("name"),
+                null,
+                rs.getObject("pointsToWin", Integer.class),
+                rs.getBoolean("winByTwo"),
+                rs.getObject("gamesToWinSet", Integer.class),
+                rs.getObject("setsToWinMatch", Integer.class),
+                rs.getObject("tiebreakAt", Integer.class),
+                rs.getBoolean("noAd"),
+                rs.getString("notes"),
+                rs.getBoolean("isActive"),
+                createdAt,
+                updatedAt
+        );
+
+        f.setFormatTypeFromString(rs.getString("formatType"));
+        return f;
+    };
+
+    @Override
+    public int insert(ScoringFormat format) {
+        final String sql = """
+                INSERT INTO ScoringFormat
+                (name, formatType, pointsToWin, winByTwo,
+                 gamesToWinSet, setsToWinMatch, tiebreakAt,
+                 noAd, notes, isActive)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        int rows = jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, format.getName());
+            ps.setString(2, format.getFormatTypeStr());
+            ps.setObject(3, format.getPointsToWin());
+            ps.setBoolean(4, Boolean.TRUE.equals(format.getWinByTwo()));
+            ps.setObject(5, format.getGamesToWinSet());
+            ps.setObject(6, format.getSetsToWinMatch());
+            ps.setObject(7, format.getTiebreakAt());
+            ps.setBoolean(8, Boolean.TRUE.equals(format.getNoAd()));
+            ps.setString(9, format.getNotes());
+            ps.setBoolean(10, Boolean.TRUE.equals(format.getIsActive()));
+            return ps;
+        }, keyHolder);
+
+        if (rows != 1) {
+            throw new IllegalStateException("Insert failed: affected rows = " + rows);
+        }
+
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new IllegalStateException("Insert succeeded but no generated key returned.");
+        }
+
+        int id = key.intValue();
+        format.setFormatId(id);
+        return id;
+    }
+
+    @Override
+    public ScoringFormat getById(int formatId) {
+        final String sql = """
+                SELECT *
+                FROM ScoringFormat
+                WHERE formatId = ?
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, rowMapper, formatId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public ScoringFormat getByName(String name) {
+        final String sql = """
+                SELECT *
+                FROM ScoringFormat
+                WHERE name = ?
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, rowMapper, name);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<ScoringFormat> getAll() {
+        return jdbcTemplate.query("SELECT * FROM ScoringFormat ORDER BY name", rowMapper);
+    }
+
+    @Override
+    public List<ScoringFormat> getByType(ScoringFormat.FormatType type) {
+        final String sql = """
+                SELECT *
+                FROM ScoringFormat
+                WHERE formatType = ?
+                ORDER BY name
+                """;
+        return jdbcTemplate.query(sql, rowMapper, type.name());
+    }
+
+    @Override
+    public List<ScoringFormat> getActive() {
+        return jdbcTemplate.query(
+                "SELECT * FROM ScoringFormat WHERE isActive = TRUE ORDER BY name",
+                rowMapper
+        );
+    }
+
+    @Override
+    public boolean update(ScoringFormat format) {
+        final String sql = """
+                UPDATE ScoringFormat
+                SET name = ?, formatType = ?, pointsToWin = ?, winByTwo = ?,
+                    gamesToWinSet = ?, setsToWinMatch = ?, tiebreakAt = ?,
+                    noAd = ?, notes = ?, isActive = ?
+                WHERE formatId = ?
+                """;
+
+        int rows = jdbcTemplate.update(
+                sql,
+                format.getName(),
+                format.getFormatTypeStr(),
+                format.getPointsToWin(),
+                format.getWinByTwo(),
+                format.getGamesToWinSet(),
+                format.getSetsToWinMatch(),
+                format.getTiebreakAt(),
+                format.getNoAd(),
+                format.getNotes(),
+                format.getIsActive(),
+                format.getFormatId()
+        );
+
+        return rows == 1;
+    }
+
+    @Override
+    public boolean delete(int formatId) {
+        return jdbcTemplate.update(
+                "DELETE FROM ScoringFormat WHERE formatId = ?",
+                formatId
+        ) == 1;
+    }
+}
