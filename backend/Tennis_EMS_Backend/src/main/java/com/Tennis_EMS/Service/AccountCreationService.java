@@ -53,6 +53,11 @@ public class AccountCreationService {
 
         validateRequest(request);
 
+        final String studentPreferredNormalized =
+                request.getRole() == User.Role.STUDENT
+                        ? normalizeOptionalPreferredName(request.getPreferredName())
+                        : null;
+
         String email = request.getEmail().trim().toLowerCase();
         if (userDAO.getByEmail(email) != null) {
             throw new ConflictException("ACCOUNT_EMAIL_EXISTS", "Email already exists.");
@@ -73,7 +78,7 @@ public class AccountCreationService {
         int userId = userDAO.insert(user);
 
         switch (request.getRole()) {
-            case ADMIN -> {
+            case ADMIN: {
                 Admin admin = new Admin(
                         null,
                         userId,
@@ -85,9 +90,9 @@ public class AccountCreationService {
                         null
                 );
                 int adminId = adminDAO.insert(admin);
-                return new CreateAccountResponseDTO(userId, User.Role.ADMIN, adminId, buildDisplayName(request));
+                return new CreateAccountResponseDTO(userId, User.Role.ADMIN, adminId, buildDisplayName(request, null));
             }
-            case COACH -> {
+            case COACH: {
                 Coach coach = new Coach(
                         null,
                         userId,
@@ -102,15 +107,15 @@ public class AccountCreationService {
                         null
                 );
                 int coachId = coachDAO.insert(coach);
-                return new CreateAccountResponseDTO(userId, User.Role.COACH, coachId, buildDisplayName(request));
+                return new CreateAccountResponseDTO(userId, User.Role.COACH, coachId, buildDisplayName(request, null));
             }
-            case STUDENT -> {
+            case STUDENT: {
                 Student student = new Student(
                         null,
                         userId,
                         request.getFirstName(),
                         request.getLastName(),
-                        request.getPreferredName(),
+                        studentPreferredNormalized,
                         request.getPhone(),
                         request.getDateOfBirth(),
                         request.getSkillLevel(),
@@ -121,9 +126,11 @@ public class AccountCreationService {
                         null
                 );
                 int studentId = studentDAO.insert(student);
-                return new CreateAccountResponseDTO(userId, User.Role.STUDENT, studentId, buildDisplayName(request));
+                return new CreateAccountResponseDTO(
+                        userId, User.Role.STUDENT, studentId, buildDisplayName(request, studentPreferredNormalized));
             }
-            default -> throw new BadRequestException("VALIDATION_ERROR", "User Role does not exist or empty.");
+            default:
+                throw new BadRequestException("VALIDATION_ERROR", "User Role does not exist or empty.");
         }
     }
 
@@ -148,13 +155,23 @@ public class AccountCreationService {
         if (request.getLastName() == null || request.getLastName().trim().isEmpty()) {
             throw new BadRequestException("VALIDATION_ERROR", "Last Name cannot be empty.");
         }
+        // preferredName: optional; length enforced by @Valid + @Size on CreateAccountRequestDTO
     }
 
-    private String buildDisplayName(CreateAccountRequestDTO request) {
-        if (request.getRole() == User.Role.STUDENT
-                && request.getPreferredName() != null
-                && !request.getPreferredName().trim().isEmpty()) {
-            return request.getPreferredName().trim();
+    /**
+     * Null if missing or blank; otherwise trimmed value for persistence.
+     */
+    private static String normalizeOptionalPreferredName(String preferredName) {
+        if (preferredName == null) {
+            return null;
+        }
+        String t = preferredName.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private String buildDisplayName(CreateAccountRequestDTO request, String normalizedStudentPreferred) {
+        if (request.getRole() == User.Role.STUDENT && normalizedStudentPreferred != null) {
+            return normalizedStudentPreferred;
         }
         return request.getFirstName().trim() + " " + request.getLastName().trim();
     }

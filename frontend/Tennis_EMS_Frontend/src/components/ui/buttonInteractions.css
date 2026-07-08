@@ -1,0 +1,66 @@
+/* Shared interaction states for TS-driven button primitives.
+ * TS owns structural styles; this CSS owns pseudo-state behavior.
+ */
+
+.ui-interactive-button {
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.08s ease;
+}
+
+.ui-interactive-button:focus {
+  outline: none;
+}
+
+.ui-interactive-button:focus-visible {
+  outline: 2px solid var(--ems-color-focus-ring);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring-soft);
+}
+
+.ui-interactive-button.ui-interactive-button--primary:hover:not(:disabled) {
+  background: var(--ems-color-text-strong);
+  border-color: var(--ems-color-text-strong);
+}
+
+.ui-interactive-button.ui-interactive-button--secondary:hover:not(:disabled) {
+  background: var(--ems-color-surface-hover);
+  border-color: var(--ems-color-border-strong);
+  color: var(--ems-color-text);
+}
+
+.ui-interactive-button.ui-interactive-button--ghost:hover:not(:disabled) {
+  background: var(--ems-color-surface-hover);
+  border-color: transparent;
+  color: var(--ems-color-text);
+}
+
+.ui-interactive-button.ui-interactive-button--danger:hover:not(:disabled) {
+  background: var(--ems-color-danger-bg-hover);
+  border-color: var(--ems-color-danger-border-strong);
+}
+
+.ui-interactive-button:active:not(:disabled) {
+  background: var(--ems-color-surface-active);
+  transform: translateY(1px);
+}
+
+.ui-interactive-button.ui-interactive-button--primary:active:not(:disabled) {
+  background: var(--ems-color-text-deep);
+}
+
+.ui-interactive-button.ui-interactive-button--danger:active:not(:disabled) {
+  background: var(--ems-color-danger-bg-active);
+}
+
+.ui-interactive-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ui-interactive-button.ui-interactive-button--loading {
+  pointer-events: none;
+}

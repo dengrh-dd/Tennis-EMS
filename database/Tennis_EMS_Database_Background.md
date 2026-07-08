@@ -1,211 +1,352 @@
-# Tennis EMS Database Background (Updated with Court Table)
+# Tennis EMS Database Background
 
 ## 0. Project Overview
 
-Tennis EMS (Education Management System) is designed to manage tennis
-training operations including: - User and role management - Course and
-scheduling system - Court management - Enrollment and attendance -
-Training groups - Session notes and performance assessments - Training
-matches and scoring
+Tennis EMS (Education Management System) uses a MySQL relational database to support the main workflow of a tennis training organization. The schema is designed for a Spring Boot backend and a React frontend, with clear modules for authentication, role profiles, course scheduling, court management, enrollment, attendance, training groups, coaching notes, assessments, and training match records.
 
-The database schema supports a full operational workflow for tennis
-coaching programs.
+The database currently focuses on development and test data rather than production personal information. Even so, the schema is structured as if it were supporting a real EMS workflow, so sensitive values such as local database passwords should stay outside GitHub and be provided through environment variables.
 
-------------------------------------------------------------------------
+---
 
-## 1. User and Role Module
+## 1. Account and Role Module
 
-### Users Table
+### Users
 
-Core authentication table containing: - userId (PK) - email (unique) -
-passwordHash - role (ADMIN / COACH / STUDENT) - isActive - createdAt -
-updatedAt
+The `Users` table is the base authentication table.
 
-Each account belongs to exactly one role.
+Main fields:
+- `userId` as the primary key
+- `email` as a unique login identifier
+- `passwordHash` for BCrypt-style hashed passwords
+- `role` with values `ADMIN`, `COACH`, or `STUDENT`
+- `isActive`, `createdAt`, and `updatedAt`
 
-### Role Profile Tables
+Each application account belongs to exactly one role. Role-specific profile data is stored in separate profile tables instead of being mixed into the base account table.
 
-Each role has its own profile table connected 1‑to‑1 with Users.
+### Admin
 
-#### Admin
+The `Admin` table stores administrator profile information.
 
-Fields: - adminId (PK) - userId (FK) - firstName - lastName - phone -
-adminLevel (SUPER / STANDARD)
+Main fields:
+- `adminId`
+- `userId`
+- `firstName`, `lastName`, `phone`
+- `adminLevel`, currently `SUPER` or `STANDARD`
 
-#### Coach
+The relationship to `Users` is one-to-one. Deleting a user cascades to the admin profile.
 
-Fields: - coachId (PK) - userId (FK) - firstName - lastName - phone -
-dateOfBirth - certification - experienceYears - bio
+### Coach
 
-#### Student
+The `Coach` table stores coach profile information.
 
-Fields: - studentId (PK) - userId (FK) - firstName - lastName -
-preferredName - phone - dateOfBirth - skillLevel - notes -
-emergencyContactName - emergencyContactPhone
+Main fields:
+- `coachId`
+- `userId`
+- `firstName`, `lastName`, `phone`
+- `dateOfBirth`
+- `certification`
+- `experienceYears`
+- `bio`
 
-Deleting a user cascades to the corresponding profile.
+This supports coach assignment to course sections and future profile/detail pages in the frontend.
 
-------------------------------------------------------------------------
+### Student
 
-## 2. Course and Scheduling Module
+The `Student` table stores student profile information.
+
+Main fields:
+- `studentId`
+- `userId`
+- `firstName`, `lastName`, `preferredName`
+- `phone`, `dateOfBirth`
+- `skillLevel`
+- `notes`
+- `emergencyContactName`, `emergencyContactPhone`
+
+This supports enrollment, attendance, group membership, assessment, and match-player records.
+
+---
+
+## 2. Course, Section, Court, and Session Module
 
 ### Course
 
-Represents a course template.
+The `Course` table represents a reusable course template.
 
-Fields: - courseId - name - courseNumber (unique) - description - level
-(BEGINNER / INTERMEDIATE / ADVANCED) - isActive
+Main fields:
+- `courseId`
+- `name`
+- `courseNumber`, unique
+- `description`
+- `level`, currently `BEGINNER`, `INTERMEDIATE`, or `ADVANCED`
+- `isActive`
 
 ### Section
 
-Represents a specific offering of a course taught by a coach.
+The `Section` table represents a specific course offering taught by a coach.
 
-Fields: - sectionId - courseId (FK) - coachId (FK) - name - syllabus -
-startDate - endDate - maxStudents - enrollmentMode (FIXED / DROP_IN /
-HYBRID) - status (PLANNED / ACTIVE / FINISHED / CANCELLED) - createdAt -
-updatedAt
+Main fields:
+- `sectionId`
+- `courseId`
+- `coachId`
+- `name`
+- `syllabus`
+- `startDate`, `endDate`
+- `maxStudents`
+- `enrollmentMode`, currently `FIXED`, `DROP_IN`, or `HYBRID`
+- `status`, currently `PLANNED`, `ACTIVE`, `FINISHED`, or `CANCELLED`
+- `createdAt`, `updatedAt`
+
+A section connects a course template to a coach and a date range.
 
 ### Court
 
-Represents tennis courts used for sessions.
+The `Court` table stores tennis court information used by scheduled sessions.
 
-Fields: - courtId (PK) - name - location - surfaceType (HARD / CLAY /
-GRASS / SYNTHETIC) - isIndoor - hasLighting - status (AVAILABLE /
-MAINTENANCE / CLOSED)
+Main fields:
+- `courtId`
+- `name`
+- `location`
+- `surfaceType`, currently `HARD`, `CLAY`, `GRASS`, or `SYNTHETIC`
+- `isIndoor`
+- `hasLighting`
+- `status`, currently `AVAILABLE`, `MAINTENANCE`, or `CLOSED`
 
-Constraints: - UNIQUE(location, name)
-
-This allows the system to manage: - indoor vs outdoor courts - lighting
-availability - court maintenance status
+The schema enforces a unique `(location, name)` pair so that the same court name can exist at different locations, but cannot be duplicated within the same location.
 
 ### Session
 
-Represents a single lesson instance.
+The `Session` table represents a single lesson or training event.
 
-Fields: - sessionId - sectionId (FK) - startTime - endTime - location -
-courtId (FK → Court) - status (SCHEDULED / IN_PROGRESS / COMPLETED /
-CANCELLED) - createdAt - updatedAt
+Main fields:
+- `sessionId`
+- `sectionId`
+- `startTime`, `endTime`
+- `location`
+- `courtId`
+- `status`, currently `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, or `CANCELLED`
+- `createdAt`, `updatedAt`
 
-If a court is deleted, courtId is set to NULL.
+`courtId` is nullable. If a court record is deleted, existing sessions keep their scheduling history while `courtId` is set to `NULL`.
 
-------------------------------------------------------------------------
+---
 
-## 3. Enrollment and Attendance
+## 3. Enrollment and Attendance Module
 
 ### Enrollment
 
-Composite PK: (studentId, sectionId)
+The `Enrollment` table connects students to sections.
 
-Fields: - studentId (FK) - sectionId (FK) - status (ENROLLED / DROPPED /
-COMPLETED) - createdAt
+Primary key:
+- `(studentId, sectionId)`
 
-Represents students enrolled in a section.
+Main fields:
+- `studentId`
+- `sectionId`
+- `status`, currently `ENROLLED`, `DROPPED`, or `COMPLETED`
+- `createdAt`
+
+This supports course enrollment pages and student course views.
 
 ### SessionAttendance
 
-Composite PK: (sessionId, studentId)
+The `SessionAttendance` table records attendance for individual sessions.
 
-Fields: - sessionId (FK) - studentId (FK) - status (ENROLLED / PRESENT /
-LATE / ABSENT / EXCUSED / CANCELLED) - source (SECTION / DROP_IN /
-ADMIN) - createdAt - updatedAt
+Primary key:
+- `(sessionId, studentId)`
 
-This design supports: - fixed enrollment classes - drop‑in training -
-manual admin adjustments.
+Main fields:
+- `sessionId`
+- `studentId`
+- `status`, currently `ENROLLED`, `PRESENT`, `LATE`, `ABSENT`, `EXCUSED`, or `CANCELLED`
+- `source`, currently `SECTION`, `DROP_IN`, or `ADMIN`
+- `createdAt`, `updatedAt`
 
-------------------------------------------------------------------------
+This design supports fixed-section attendance, drop-in attendance, and manual administrative adjustments.
 
-## 4. Training Groups
+---
+
+## 4. Training Group Module
 
 ### TrainingGroup
 
-Fields: - groupId - name - groupType (TRAINING_GROUP / CLASS_GROUP /
-CLUB_TEAM) - description - isActive - createdAt - updatedAt
+The `TrainingGroup` table represents a group of students outside or across formal course sections.
+
+Main fields:
+- `groupId`
+- `name`
+- `groupType`, currently `TRAINING_GROUP`, `CLASS_GROUP`, or `CLUB_TEAM`
+- `description`
+- `isActive`
+- `createdAt`, `updatedAt`
 
 ### TrainingGroupMember
 
-Composite PK: (groupId, studentId)
+The `TrainingGroupMember` table connects students to groups.
 
-Fields: - groupId (FK) - studentId (FK) - startDate - endDate -
-createdAt - updatedAt
+Primary key:
+- `(groupId, studentId)`
 
-endDate NULL indicates an active member.
+Main fields:
+- `groupId`
+- `studentId`
+- `startDate`
+- `endDate`
+- `createdAt`, `updatedAt`
 
-------------------------------------------------------------------------
+A `NULL` `endDate` means the student is currently an active member.
 
-## 5. Session Notes and Assessments
+---
+
+## 5. Notes and Assessment Module
 
 ### SessionNote
 
-Fields: - noteId - sessionId (FK) - authorUserId (FK → Users) - title -
-content - createdAt - updatedAt
+The `SessionNote` table stores coach/admin notes for a session.
+
+Main fields:
+- `noteId`
+- `sessionId`
+- `authorUserId`
+- `title`
+- `content`
+- `createdAt`, `updatedAt`
 
 ### SessionAssessment
 
-Fields: - assessmentId - sessionId (FK) - studentId (FK) - metric -
-score (1‑10) - comment - assessorUserId (FK → Users) - createdAt -
-updatedAt
+The `SessionAssessment` table stores student-level evaluation metrics for a session.
 
-Constraint: - UNIQUE(sessionId, studentId, metric)
+Main fields:
+- `assessmentId`
+- `sessionId`
+- `studentId`
+- `metric`
+- `score`, constrained from 1 to 10
+- `comment`
+- `assessorUserId`
+- `createdAt`, `updatedAt`
 
-Metrics may include: FOREHAND, BACKHAND, SERVE, VOLLEY, FOOTWORK,
-STAMINA, STRATEGY, MENTAL, CONSISTENCY.
+The schema enforces `UNIQUE(sessionId, studentId, metric)` so the same student cannot receive duplicate scores for the same metric in one session.
 
-------------------------------------------------------------------------
+Example metrics include `FOREHAND`, `BACKHAND`, `SERVE`, `VOLLEY`, `FOOTWORK`, `STAMINA`, `STRATEGY`, `MENTAL`, and `CONSISTENCY`.
 
-## 6. Training Matches and Scoring
+---
+
+## 6. Training Match and Scoring Module
 
 ### ScoringFormat
 
-Defines match scoring systems.
+The `ScoringFormat` table defines supported scoring systems.
 
-Fields: - formatId - name (unique) - formatType (POINT_RACE / GAME_RACE
-/ SET_MATCH) - pointsToWin - winByTwo - gamesToWinSet - setsToWinMatch -
-tiebreakAt - noAd - notes - isActive - createdAt - updatedAt
+Main fields:
+- `formatId`
+- `name`
+- `formatType`, currently `POINT_RACE`, `GAME_RACE`, or `SET_MATCH`
+- `pointsToWin`
+- `winByTwo`
+- `gamesToWinSet`
+- `setsToWinMatch`
+- `tiebreakAt`
+- `noAd`
+- `notes`
+- `isActive`
+- `createdAt`, `updatedAt`
 
 ### TrainingMatch
 
-Fields: - matchId - sessionId (FK) - formatId (FK) - matchType (SINGLES
-/ DOUBLES) - title - notes - status (SCHEDULED / IN_PROGRESS / COMPLETED
-/ CANCELLED) - winnerSide (A / B) - createdAt - updatedAt
+The `TrainingMatch` table represents a training match connected to a session.
+
+Main fields:
+- `matchId`
+- `sessionId`
+- `formatId`
+- `matchType`, currently `SINGLES` or `DOUBLES`
+- `title`
+- `notes`
+- `status`, currently `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, or `CANCELLED`
+- `winnerSide`, currently `A` or `B`
+- `createdAt`, `updatedAt`
 
 ### MatchSidePlayer
 
-Composite PK: (matchId, side, position)
+The `MatchSidePlayer` table stores who played on each side.
 
-Fields: - matchId (FK) - side (A / B) - position (1 / 2) - studentId
-(FK)
+Primary key:
+- `(matchId, side, position)`
 
-Supports singles and doubles.
+Main fields:
+- `matchId`
+- `side`, currently `A` or `B`
+- `position`, currently `1` or `2`
+- `studentId`
+
+This supports both singles and doubles training matches.
 
 ### MatchSummary
 
-1‑to‑1 with TrainingMatch.
+The `MatchSummary` table stores a one-to-one summary for a match.
 
-Fields: - matchId - finalScoreText - sideAScore - sideBScore
+Main fields:
+- `matchId`
+- `finalScoreText`
+- `sideAScore`
+- `sideBScore`
 
 ### MatchSegment
 
-Composite PK: (matchId, segmentNo)
+The `MatchSegment` table stores set-by-set or segment-level score details.
 
-Fields: - matchId - segmentNo - segmentType (SET / TB / RACE) -
-sideAScore - sideBScore
+Primary key:
+- `(matchId, segmentNo)`
 
-Allows recording set‑by‑set or segment scores.
+Main fields:
+- `matchId`
+- `segmentNo`
+- `segmentType`, currently `SET`, `TB`, or `RACE`
+- `sideAScore`
+- `sideBScore`
 
-------------------------------------------------------------------------
+---
 
-## 7. Overall Schema Characteristics
+## 7. Relationship Summary
 
-The current schema demonstrates several design strengths:
+High-level flow:
 
-1.  Clear role separation between authentication and role profiles.
-2.  Full course lifecycle: Course → Section → Session.
-3.  Standardized court management integrated with scheduling.
-4.  Flexible enrollment and attendance system supporting multiple
-    training scenarios.
-5.  Detailed performance tracking via assessments.
-6.  Advanced match scoring capable of representing singles and doubles
-    training matches.
+```text
+Users
+├── Admin
+├── Coach ─── Section ─── Session ─── SessionAttendance
+└── Student ─ Enrollment ┘       ├── SessionNote
+                                  ├── SessionAssessment
+                                  └── TrainingMatch ─ MatchSidePlayer
+                                                   ├── MatchSummary
+                                                   └── MatchSegment
 
-The schema is already suitable for integration with Spring Boot services
-and for generating realistic seed data for development and testing.
+Course ─── Section
+Court ─── Session
+TrainingGroup ─── TrainingGroupMember ─── Student
+ScoringFormat ─── TrainingMatch
+```
+
+---
+
+## 8. Design Characteristics
+
+The current schema has several design strengths:
+
+1. Authentication and role profiles are separated cleanly.
+2. Course templates, sections, sessions, courts, and enrollment are modeled as separate concepts.
+3. Attendance supports both fixed enrollment and drop-in workflows.
+4. Training groups support team/class/group organization outside the course-section structure.
+5. Session notes and assessments provide a foundation for coach feedback and student progress tracking.
+6. Training match tables support singles, doubles, flexible scoring formats, summaries, and segment-level score details.
+7. The schema is suitable for Spring JDBC service integration and development seed data generation.
+
+---
+
+## 9. Current Repository Notes
+
+- `schema.sql` is the executable database schema.
+- `Tennis_EMS_Database_Background.md` is the human-readable explanation of the schema.
+- Test data should be generated or seeded locally; production-like personal data should not be committed.
+- Database connection credentials should not be committed. The backend should read them from environment variables such as `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`.

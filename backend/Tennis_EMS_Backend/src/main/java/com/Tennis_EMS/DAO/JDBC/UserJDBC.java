@@ -101,6 +101,20 @@ public class UserJDBC implements UserDAO {
     }
 
     @Override
+    public List<User> getByRole(String role) {
+        if (role == null || role.trim().isEmpty()) {
+            return List.of();
+        }
+        final String sql = """
+                SELECT userId, email, passwordHash, role, isActive, createdAt, updatedAt
+                FROM Users
+                WHERE role = ?
+                ORDER BY userId
+                """;
+        return jdbcTemplate.query(sql, rowMapper, role.trim().toUpperCase());
+    }
+
+    @Override
     public User getById(int id) {
         final String sql = """
                 SELECT userId, email, passwordHash, role, isActive, createdAt, updatedAt

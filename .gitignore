@@ -1,15 +1,52 @@
-# Java
-target/
-*.class
+# =========================================================
+# Tennis EMS - root .gitignore
+# =========================================================
 
-# Node
-node_modules/
-dist/
-
-# IDE
-.idea/
-.vscode/
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.iml
+.cursor/
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+application-local.properties
+**/application-local.properties
+**/application-*.local.properties
+
+# Java / Spring Boot / Maven
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Vite / React
+**/node_modules/
+**/dist/
+**/build/
+**/.vite/
+coverage/
+
+# Temporary / generated files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Local code-export folders used for ChatGPT / manual review
+**/TXT/
+*_txt/
+*副本*

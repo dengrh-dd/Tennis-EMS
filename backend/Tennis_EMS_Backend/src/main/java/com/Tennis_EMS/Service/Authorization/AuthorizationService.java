@@ -48,4 +48,18 @@ public class AuthorizationService {
     public void requireAdminOrCoachOrStudent(User.Role actualRole) {
         requireRole(actualRole, User.Role.ADMIN, User.Role.COACH, User.Role.STUDENT);
     }
+
+    /**
+     * Admin can access any user; coach can only access their own profile.
+     */
+    public void requireAdminOrSelfCoach(User.Role actualRole, int actualUserId, int targetUserId) {
+        if (actualRole == User.Role.ADMIN) {
+            return;
+        }
+        if (actualRole == User.Role.COACH) {
+            requireSelf(actualUserId, targetUserId);
+            return;
+        }
+        throw new ForbiddenException("AUTH_FORBIDDEN", "Access denied.");
+    }
 }

@@ -16,6 +16,7 @@ public class Student {
 
     private String firstName;
     private String lastName;
+    /** Optional; may be null when not set. */
     private String preferredName;
     private String phone;
     private LocalDate dateOfBirth;

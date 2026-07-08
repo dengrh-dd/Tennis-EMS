@@ -1,0 +1,32 @@
+/* Sidebar nav — hover via CSS only. Values: `emsDesignTokens.css`. */
+
+.app-sidebar-nav-link {
+  display: block;
+  text-decoration: none;
+  color: var(--ems-color-text-soft);
+  padding: 10px 12px 10px 10px;
+  border-radius: var(--ems-radius-sm);
+  font-size: var(--ems-font-size-body);
+  border-left: 3px solid transparent;
+  transition: background-color 0.12s ease;
+}
+
+.app-sidebar-nav-link:hover:not(.app-sidebar-nav-link--active) {
+  background: var(--ems-color-surface-hover);
+}
+
+.app-sidebar-nav-link--active {
+  background: var(--ems-color-border-light);
+  border-left-color: var(--ems-sidebar-active-border);
+  color: var(--ems-color-text);
+  font-weight: 600;
+}
+
+.app-sidebar-nav-link:focus {
+  outline: none;
+}
+
+.app-sidebar-nav-link:focus-visible {
+  outline: 2px solid var(--ems-sidebar-focus-outline);
+  outline-offset: 2px;
+}

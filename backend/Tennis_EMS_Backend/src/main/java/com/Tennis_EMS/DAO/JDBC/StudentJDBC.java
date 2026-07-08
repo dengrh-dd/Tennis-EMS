@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,8 +75,8 @@ public class StudentJDBC implements StudentDAO {
             ps.setInt(1, student.getUserId());
             ps.setString(2, student.getFirstName());
             ps.setString(3, student.getLastName());
-            ps.setString(4, student.getPreferredName());
-            ps.setString(5, student.getPhone());
+            setStringOrNull(ps, 4, student.getPreferredName());
+            setStringOrNull(ps, 5, student.getPhone());
 
             if (student.getDateOfBirth() != null) {
                 ps.setDate(6, Date.valueOf(student.getDateOfBirth()));
@@ -82,10 +84,10 @@ public class StudentJDBC implements StudentDAO {
                 ps.setNull(6, java.sql.Types.DATE);
             }
 
-            ps.setString(7, student.getSkillLevelStr());
-            ps.setString(8, student.getNotes());
-            ps.setString(9, student.getEmergencyContactName());
-            ps.setString(10, student.getEmergencyContactPhone());
+            setStringOrNull(ps, 7, student.getSkillLevelStr());
+            setStringOrNull(ps, 8, student.getNotes());
+            setStringOrNull(ps, 9, student.getEmergencyContactName());
+            setStringOrNull(ps, 10, student.getEmergencyContactPhone());
 
             return ps;
         }, keyHolder);
@@ -197,6 +199,15 @@ public class StudentJDBC implements StudentDAO {
                 "DELETE FROM Student WHERE studentId = ?",
                 id
         ) == 1;
+    }
+
+    /** Bind SQL NULL explicitly for nullable VARCHAR columns (avoids driver edge cases). */
+    private static void setStringOrNull(PreparedStatement ps, int parameterIndex, String value) throws SQLException {
+        if (value != null) {
+            ps.setString(parameterIndex, value);
+        } else {
+            ps.setNull(parameterIndex, Types.VARCHAR);
+        }
     }
 }
 

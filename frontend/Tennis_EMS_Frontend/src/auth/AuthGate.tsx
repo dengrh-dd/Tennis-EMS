@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { me } from './authApi'
-import type { Role } from './types'
-
-function roleHome(role: Role) {
-  if (role === 'ADMIN') return '/admin'
-  if (role === 'COACH') return '/coach'
-  return '/student'
-}
+import { roleHome } from './roleHome'
 
 export default function AuthGate() {
   const navigate = useNavigate()

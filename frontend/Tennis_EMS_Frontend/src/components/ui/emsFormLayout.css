@@ -1,0 +1,143 @@
+/* Shared EMS form layout — stacked fields, actions, and primary actions for management UIs. Values: `emsDesignTokens.css`. */
+
+.ems-form {
+  padding: var(--ems-space-md-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ems-space-md);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ems-form-card {
+  border: 1px solid var(--ems-color-border-light);
+  border-radius: var(--ems-radius-md);
+  padding: var(--ems-space-md-lg);
+  background: var(--ems-color-surface);
+  margin-bottom: var(--ems-space-md-lg);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ems-form-label {
+  display: block;
+  margin-bottom: var(--ems-space-xs);
+  font-size: var(--ems-font-size-body);
+  color: var(--ems-color-text-label);
+}
+
+.ems-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ems-space-xs);
+  min-width: 0;
+}
+
+.ems-input,
+.ems-select,
+.ems-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--ems-control-min-height);
+  border: 1px solid var(--ems-color-border);
+  border-radius: var(--ems-radius-sm);
+  padding: var(--ems-space-sm) 10px;
+  background: var(--ems-color-surface);
+  color: var(--ems-color-text);
+  font-size: var(--ems-font-size-body);
+  line-height: 1.4;
+}
+
+.ems-textarea {
+  min-height: var(--ems-textarea-min-height);
+  resize: vertical;
+}
+
+.ems-input:focus-visible,
+.ems-select:focus-visible,
+.ems-textarea:focus-visible,
+.ems-checkbox:focus-visible {
+  outline: 2px solid var(--ems-color-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--ems-color-focus-ring);
+}
+
+.ems-input:disabled,
+.ems-select:disabled,
+.ems-textarea:disabled {
+  background: var(--ems-color-surface-muted);
+  color: var(--ems-color-text-muted);
+  cursor: not-allowed;
+}
+
+.ems-input-readonly {
+  background: var(--ems-color-surface-muted);
+  color: var(--ems-color-text-label);
+  opacity: 0.9;
+}
+
+.ems-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ems-space-sm);
+  font-size: var(--ems-font-size-body);
+  color: var(--ems-color-text-soft);
+}
+
+.ems-checkbox {
+  width: var(--ems-checkbox-size);
+  height: var(--ems-checkbox-size);
+}
+
+.ems-form-actions {
+  display: flex;
+  gap: var(--ems-space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.ems-form-actions-end {
+  justify-content: flex-end;
+  margin-bottom: var(--ems-space-md);
+}
+
+.ems-form-footer {
+  margin-top: var(--ems-space-sm);
+  padding-top: var(--ems-space-md);
+  border-top: 1px solid var(--ems-color-border-light);
+}
+
+.ems-action-button {
+  min-height: 36px;
+  padding: var(--ems-space-sm) var(--ems-space-md-lg);
+  border: 1px solid var(--ems-color-border);
+  border-radius: var(--ems-radius-sm);
+  background: var(--ems-color-surface);
+  color: var(--ems-color-text);
+  font-size: var(--ems-font-size-body);
+  font-weight: 600;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.ems-action-button:hover:not(:disabled) {
+  background: var(--ems-color-surface-hover);
+}
+
+.ems-action-button:focus {
+  outline: none;
+}
+
+.ems-action-button:focus-visible {
+  outline: 2px solid var(--ems-color-focus-ring);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring-soft);
+}
+
+.ems-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

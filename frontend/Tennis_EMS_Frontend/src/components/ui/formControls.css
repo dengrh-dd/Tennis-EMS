@@ -1,0 +1,124 @@
+/* Focus/disabled behavior for shared `ui/*` text/select/textarea/checkbox inputs. Values: `emsDesignTokens.css`. */
+
+.ui-text-input:focus-visible,
+.ui-select-input:focus-visible,
+.ui-textarea-input:focus-visible,
+.ui-checkbox-input:focus-visible {
+  outline: 2px solid var(--ems-color-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--ems-color-focus-ring);
+}
+
+.ui-text-input:disabled,
+.ui-select-input:disabled,
+.ui-textarea-input:disabled {
+  background: var(--ems-color-surface-muted);
+  color: var(--ems-color-text-muted);
+  cursor: not-allowed;
+}
+
+.ui-checkbox-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ui-text-input::placeholder,
+.ui-textarea-input::placeholder {
+  color: var(--ems-color-text-subtle);
+}
+
+/* Canonical `form-*` classes for legacy form components and feature-level form markup. */
+.form-root {
+  padding: var(--ems-space-md-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ems-space-md);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-card {
+  border: 1px solid var(--ems-color-border-light);
+  border-radius: var(--ems-radius-md);
+  padding: var(--ems-space-md-lg);
+  background: var(--ems-color-surface);
+  margin-bottom: var(--ems-space-md-lg);
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: var(--ems-shadow-card);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--ems-space-xs);
+  font-size: var(--ems-font-size-body);
+  color: var(--ems-color-text-label);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ems-space-xs);
+  min-width: 0;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--ems-control-min-height);
+  border: 1px solid var(--ems-color-border);
+  border-radius: var(--ems-radius-sm);
+  padding: var(--ems-space-sm) 10px;
+  background: var(--ems-color-surface);
+  color: var(--ems-color-text);
+  font-size: var(--ems-font-size-body);
+  line-height: 1.4;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--ems-color-text-subtle);
+}
+
+.form-textarea {
+  min-height: var(--ems-textarea-min-height);
+  resize: vertical;
+}
+
+.form-input:focus-visible,
+.form-select:focus-visible,
+.form-textarea:focus-visible,
+.form-checkbox:focus-visible {
+  outline: 2px solid var(--ems-color-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--ems-color-focus-ring);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--ems-color-surface-muted);
+  color: var(--ems-color-text-muted);
+  cursor: not-allowed;
+}
+
+.form-input-readonly {
+  background: var(--ems-color-surface-muted);
+  color: var(--ems-color-text-label);
+  opacity: 0.9;
+}
+
+.form-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ems-space-sm);
+  font-size: var(--ems-font-size-body);
+  color: var(--ems-color-text-soft);
+}
+
+.form-checkbox {
+  width: var(--ems-checkbox-size);
+  height: var(--ems-checkbox-size);
+}

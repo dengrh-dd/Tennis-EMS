@@ -1,4 +1,18 @@
--- ===== Schema =====
+-- ============================================================
+-- Tennis EMS Database Schema
+--
+-- Purpose:
+--   Defines the MySQL schema for the Tennis Education Management
+--   System, including accounts, role profiles, courses, sections,
+--   courts, sessions, enrollment, attendance, training groups,
+--   notes, assessments, training matches, players, summaries, and
+--   segment-level scoring records.
+--
+-- Usage:
+--   Run this file against a local MySQL instance for development or
+--   testing. Keep real production data and credentials outside GitHub.
+-- ============================================================
+
 CREATE DATABASE IF NOT EXISTS tennis_ems
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_0900_ai_ci;
@@ -8,9 +22,9 @@ USE tennis_ems;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- =========================
--- USER MODULE (Sample v1)
--- Users as base account table
--- Admin/Coach/Student have their own PKs
+-- ACCOUNT AND ROLE MODULE
+-- Users is the base account table.
+-- Admin/Coach/Student store role-specific profile data with their own PKs.
 -- =========================
 
 DROP TABLE IF EXISTS `Student`;
@@ -111,7 +125,7 @@ CREATE TABLE `Student` (
 
 
 -- =========================================
--- COURSE SYSTEM 
+-- COURSE, COURT, AND SESSION SYSTEM
 -- =========================================
 
 DROP TABLE IF EXISTS `SessionAttendance`;

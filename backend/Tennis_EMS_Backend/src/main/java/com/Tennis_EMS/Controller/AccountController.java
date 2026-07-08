@@ -4,6 +4,7 @@ import com.Tennis_EMS.DTO.Account.CreateAccountRequestDTO;
 import com.Tennis_EMS.DTO.Account.CreateAccountResponseDTO;
 import com.Tennis_EMS.Service.AccountCreationService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class AccountController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateAccountResponseDTO createAccount(@RequestBody CreateAccountRequestDTO request, HttpSession session) {
+    public CreateAccountResponseDTO createAccount(@Valid @RequestBody CreateAccountRequestDTO request, HttpSession session) {
         return accountCreationService.createAccount(request, session);
     }
 }

@@ -1,6 +1,7 @@
 package com.Tennis_EMS.DTO.Account;
 
 import com.Tennis_EMS.Entity.User;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
@@ -16,6 +17,8 @@ public class CreateAccountRequestDTO {
     private String phone;
 
     // ===== Student-only =====
+    /** Optional display name; may be null or omitted. Blank strings are stored as null. */
+    @Size(max = 100, message = "Preferred name must be at most 100 characters.")
     private String preferredName;
     private LocalDate dateOfBirth;
     private String skillLevel;
